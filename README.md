@@ -41,7 +41,7 @@ Many papers have pre-defined training cycles which train the Discriminator more 
 
 
 ## Results
-Final results turned out quite well. The detail isn't quite as sharp as in the input data but overall very impressive considering the translation from a fairly vague segmentation map to realistic looking 3D terrain.
+Final results turned out quite well. The detail isn't quite as sharp as in the input data but overall very impressive considering the translation from a fairly vague segmentation map to realistic looking 3D terrain. I also wrote a very simple python function for converting the Texture and Height matrices output by the Generator into an OBJ 3D model file which can be opened and viewed by any 3D rendering application.
 
 Example Terrain, Height, and Texture maps.
 ![](../master/images/OutputExample.png)
