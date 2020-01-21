@@ -1,4 +1,4 @@
-# SPADE-Terrain-GAN
+# Terrain GAN
 ## Goal
 Create a generator model which can translate a human-drawn Segmentation map of terrain into a realistic Texture and Height map which can be rendered in 3D.
 
@@ -7,6 +7,9 @@ Create a generator model which can translate a human-drawn Segmentation map of t
 Using USGS data, I assembled a global Terrain and Height map. The Terrain map is an artistic depiction of land type and other features as well as geometrically calculated shadowing and highlights to show changes in elevation. The Height map encodes land altitude above sea level as pixel intensity. Five thousand 512x512 patches were randomly taken from the global map with some selection to ensure the crop included meaningful features (not just empty ocean). In addition, the crops were rescaled based on latitude to compensate for the distorting effects of the map projection and ensure a consistent size to terrain features.
 
 To create the Segmentation maps, a dataset was assembled by randomly sampling pixels from the real Terrain/Height maps along with other information about surrounding pixels. Features were reduced using a non-linear dimension reduction and then the samples were clustered. My original intent prior to starting was to use five clusters but after some analysis of the data it became clear that seven would be needed. These clusters were manually tweaked to better align with my qualitative interpretations and finally a model was trained to classify pixels into their appropriate segmentation category. The Terrain crops were processed by this model along with some post-processing to reduce overall noise and produce Segmentation maps composed of large, smooth blobs. Some randomization was introduced into the parameters of the post-processing to increase the diversity of the Segmentation maps and ensure overlapping patches were not identical.
+
+The dataset I built and trained with can be found here:
+(https://www.kaggle.com/tpapp157/earth-terrain-height-and-segmentation-map-images)
 
 Exmple of Terrain, Height, and Segmentation maps.
 ![](../master/images/DataExample.png)
