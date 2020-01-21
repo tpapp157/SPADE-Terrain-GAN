@@ -17,7 +17,7 @@ PATH = r'datasets\TERR\trainH'
 
 #%%
 BUFFER_SIZE = 50
-BATCH_SIZE = 10
+BATCH_SIZE = 5
 IMG_WIDTH = 256
 IMG_HEIGHT = 256
 
@@ -48,9 +48,11 @@ def load_train(inf, trf, htf):
     real_image = temp[1]
     height_image = tf.expand_dims(temp[2,:,:,0], -1)
     
-    input_image = tf.image.resize(input_image, [128, 128], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-    real_image = tf.image.resize(real_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
-    height_image = tf.image.resize(height_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
+# =============================================================================
+#     input_image = tf.image.resize(input_image, [128, 128], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+#     real_image = tf.image.resize(real_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
+#     height_image = tf.image.resize(height_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
+# =============================================================================
     
     input_image = tf.one_hot(tf.argmin(tf.norm(tf.expand_dims(input_image, -2)-C, axis=3), 2), C.shape[2], dtype=tf.float32)
     real_image = real_image / 127.5 - 1
@@ -84,9 +86,11 @@ def load_test(inf, trf, htf):
     real_image = temp[1]
     height_image = tf.expand_dims(temp[2,:,:,0], -1)
     
-    input_image = tf.image.resize(input_image, [128, 128], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-    real_image = tf.image.resize(real_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
-    height_image = tf.image.resize(height_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
+# =============================================================================
+#     input_image = tf.image.resize(input_image, [128, 128], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+#     real_image = tf.image.resize(real_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
+#     height_image = tf.image.resize(height_image, [128, 128], method=tf.image.ResizeMethod.BILINEAR, antialias=True)
+# =============================================================================
     
     oh_image = tf.one_hot(tf.argmin(tf.norm(tf.expand_dims(input_image, -2)-C, axis=3), 2), C.shape[2], dtype=tf.float32)
     
@@ -244,25 +248,17 @@ def Generator():
     
 
     x = spade_resblock(segmap, x, channels=channel, use_bias=True)
-    #x = simple_spade(x, segmap, channel)
-    #x = con_conv(x, segmap, channel)
 
     sf = 2
     x = tf.image.resize(x, [sf*z_height, sf*z_width], method=tf.image.ResizeMethod.BILINEAR)
     x = spade_resblock(segmap, x, channels=channel, use_bias=True)
     x = spade_resblock(segmap, x, channels=channel, use_bias=True)
-    #x = simple_spade(x, segmap, channel)
-    #x = simple_spade(x, segmap, channel)
-    #x = con_conv(x, segmap, channel)
-    #x = con_conv(x, segmap, channel)
 
     for i in range(4):
         sf = 2*sf
         channel = channel // 2
         x = tf.image.resize(x, [sf*z_height, sf*z_width], method=tf.image.ResizeMethod.BILINEAR)
         x = spade_resblock(segmap, x, channels=channel, use_bias=True)
-        #x = simple_spade(x, segmap, channel)
-        #x = con_conv(x, segmap, channel)
         
     x = tf.nn.leaky_relu(x, 0.2)
     x = conv(x, channels=OUTPUT_CHANNELS, kernel=1, stride=1, use_bias=True)
@@ -391,8 +387,9 @@ def Discriminator():
     left = tf.pad(left, [[0,0], [0,0], [1,0], [0,0]], mode='SYMMETRIC', name='left_pad')
     im1 = tf.concat([im0, top, left], axis=3)
     
+    size = tf.shape(im0)[1]
     D_logit = []
-    for n in [128, 32, 8]:
+    for n in [size, size//4, size//16]:
         segmap = tf.image.resize(segmap0, [n, n], method=tf.image.ResizeMethod.BILINEAR)
         im = tf.image.resize(im1, [n, n], method=tf.image.ResizeMethod.BILINEAR)
         x = tf.concat([segmap, im], axis=3)
@@ -523,7 +520,7 @@ def generate_images(model, test_input, tar, htar, orig_inp, name):
     out= tf.concat([out1, out2], axis=1)
       
     for i in range(out.shape.as_list()[0]):
-        tf.io.write_file(os.path.join(r'C:\Users\tpapp\Desktop\GAN\datasets\TERR\outH',str(name)+'-'+str(i)+'.png'), tf.image.encode_png(out[i,:,:,:]))
+        tf.io.write_file(os.path.join(r'datasets\TERR\outH',str(name)+'-'+str(i)+'.png'), tf.image.encode_png(out[i,:,:,:]))
         
 
 @tf.function
