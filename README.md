@@ -1,4 +1,24 @@
 # Terrain GAN
+## Updates
+#### 1.0
+Original implementation of SPADE architecture with variety of modifications to accommodate terrain generation task.
+
+#### 1.1
+Implementation of the modulated convolution from the StyleGAN2 Architecture. Original TF2 modulated convolution implementation by manicman1999 (https://github.com/manicman1999/StyleGAN2-Tensorflow-2.0) which I then modified to accommodate SPADE segmentation map modulation and demodulation. This allows SPADE’s original channel normalization to be removed entirely. Trying to train the original SPADE architecture without either channel normalization or modulated convolution results in fairly rapid training collapse.
+
+Replaced intermediary convolutions with modulated convolutions and conducted early training tests with multiple generator architecture variations with mixed qualitative results:
+- Multi-scale sum generator of StyleGAN2 (worst performance).
+- Modification to sum layer outputs in high-dimensional featurespace with a final 1x1 convolution to color space (better performance).
+- Original SPADE residual architecture (best performance).
+These were not trained to completion, only a couple dozen epochs to gauge early training performance.
+
+#### 1.2
+Implemented TF2 layer of Stand-Alone Self-Attention in Vision Models layer based on leaderj1001 PyTorch code (https://github.com/leaderj1001/Stand-Alone-Self-Attention). Replaced one convolution in each residual block with local attention layer. Attention remains very computationally and memory intensive requiring reduction of batch size to 1, reduction of generator and discriminator channels, restriction in usage to layers of dimension 64x64 or less, and no attention in discriminator (also increases training time per epoch). Even with these compromises, attention holds the potential of allowing more cohesive and structured terrain features rather than simpler uniform textures and patterns.
+
+Initial implementation of experimental Scaled Sum layer to incorporate more global information in the segmentation map modulation. Segmentation maps contain large regions of uniform classification which I suspect add little value in later layers of the generator. Scaled Sum layer creates a binary partition tree of the image and aggregates the feature values for each partition across each layer of the tree. This layer is added to the creation of each segmentation map modulation. In effect this creates a sort of per-pixel channel attention where queries come from the segmentation map, keys come from the Scaled Sum of the current image features, and values come from the current image features. This layer is again memory intensive so it’s been restricted to layers of dimension 64x64 and lower.
+
+
+
 ## Goal
 Create a generator model which can translate a human-drawn Segmentation map of terrain into a realistic Texture and Height map which can be rendered in 3D.
 
